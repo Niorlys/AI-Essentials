@@ -1,8 +1,9 @@
 import sympy
 import numpy as np
 import matplotlib.pyplot as plt
+from _0_base import MLBase
 
-class GradientDescendent:
+class SymbGradientDescendent:
     def __init__(self, function, variables):
         """
         Initialize the GradientDescendent class.
@@ -87,11 +88,47 @@ class GradientDescendent:
         plt.legend()
         plt.show()
 
+    @staticmethod
+    def non_symb_gradient_descendent(gradient, learning_rate, initial_params, max_iter):
+        """
+        Apply gradient descendet using an ussual callable as gradient
+        """
+        params = np.array(initial_params, dtype=float)
+
+        for _ in range(max_iter):
+            grad_values = np.array([pd(*params) for pd in gradient])
+
+            params -= learning_rate * grad_values
+
+        return params
+
+def linear_regression_gradient_descent(learning_rate=0.02, max_iter=1000):
+    # Generating synthetic data
+    np.random.seed(42)
+    X = np.random.rand(100, 1) * 10
+    y = 2 * X + 1 + np.random.randn(100, 1)*0.7 
+    m = len(X)
+
+    gradient = [lambda theta_0, theta_1: (1/m)*np.sum((theta_0*X + theta_1 - y)*X),
+                lambda theta_0, theta_1: (1/m)*np.sum((theta_0*X + theta_1 - y))]
+    
+    initial_params = [0, 0]
+    opt = SymbGradientDescendent.non_symb_gradient_descendent(gradient, learning_rate, initial_params, max_iter)
+    print("theta_0, theta_1:", *opt)
+
+    plt.scatter(X, y)
+    plt.title("Synthetic Data and Regression Line")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.plot(X, opt[0]*X + opt[1], 'r-', label='Regression Line')
+    plt.legend()
+    plt.show()
+
 if __name__ == "__main__":
     x, y = sympy.symbols('x y')
     f = (x-2)**2 + y**2
 
-    gd = GradientDescendent(f, [x, y])
+    gd = SymbGradientDescendent(f, [x, y])
 
     learning_rate = 0.1
     initial_params = [-8.0, 8.0]
